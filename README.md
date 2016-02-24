@@ -1,2 +1,2 @@
 # GenerateValueFiles_1920
-Android_GenerateValueFiles_1920
+生成基于美工1920x1080px图的对应dp值的java文件

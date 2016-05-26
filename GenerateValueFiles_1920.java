@@ -1,9 +1,9 @@
-package com.sunxl.main;
+package UI;
 /**
  * Project Name:Try
  * File Name:GenerateValueFiles.java
  * Package Name:
- * Date:2016-2-22����4:12:09
+ * Date:2016-2-22下午4:12:09
  * Copyright (c) 2016, chenzhou1025@126.com All Rights Reserved.
  *
  */
@@ -12,7 +12,7 @@ package com.sunxl.main;
  * ClassName:GenerateValueFiles <br/>
  * Function: TODO ADD FUNCTION. <br/>
  * Reason:	 TODO ADD REASON. <br/>
- * Date:     2016-2-22 ����4:12:09 <br/>
+ * Date:     2016-2-22 下午4:12:09 <br/>
  * @author   SunXL
  * @version  
  * @since    JDK 1.6
@@ -26,9 +26,18 @@ import java.io.PrintWriter;
 /**
  * 
  * ClassName: GenerateValueFiles_1920 <br/>
- * Function: px��dp���ָ�ʽ���ļ�ת�� <br/>
- * Reason: ��׿��Ļ����,����ʹ��1920x1080px�ı�׼,��������̵��µ���Ҫ���¼������,��������px��dp��ת��,ԭ������:http://blog.csdn.net/lmj623565791/article/details/45460089 <br/>
- * date: 2016-2-24 ����7:51:38 <br/>
+ * Function: px到dp多种格式多文件转换 <br/>
+ * Reason: 安卓屏幕适配,鉴于使用1920x1080px的标准,且虚拟键盘导致的需要重新计算参数,而故生成px到dp的转换,原博链接:http://blog.csdn.net/lmj623565791/article/details/45460089 <br/>
+ * use: 基础宽度basew=1080,baseh=1920,即以1920x1080为模板,
+ * 		故需要"px/3的dp"时可直接使用640X360文件夹下的y文件,--2016-2-24时初次使用,修改已保存
+ * 		核心修改为cellw与cellh,--2016-5-26时需要以原有基础x1.44,故可将cell * 1.44f
+ * kernel: cellw = 需求屏幕宽度 / 基础宽度
+ * 		 
+ * tips: 默认的最后一条为basew/baseh为输出,需要时可将for循环条件+1
+ * 
+ * date: 2016-2-24 下午7:51:38 
+ * 		 2016-5-26  下午3:26:13	
+ * <br/>
  *
  * @author SunXL
  * @version 
@@ -42,7 +51,7 @@ public class GenerateValueFiles_1920 {
     private String dirStr = "./res";
 
     /**
-     * ���ɵĸ�ʽ
+     * 生成的格式,后替换"{0}"与"{1}"为对应值,如果需要xy分开,则可W,H都改
      */
     private final static String WTemplate = "<dimen name=\"x{0}\">{1}dp</dimen>\n";
     private final static String HTemplate = "<dimen name=\"px_{0}\">{1}dp</dimen>\n";
@@ -52,6 +61,7 @@ public class GenerateValueFiles_1920 {
      */
     private final static String VALUE_TEMPLATE = "values-{0}x{1}";
 
+    //需求屏幕宽高数组
     private static final String SUPPORT_DIMESION = "320,480;480,800;360,640;480,854;540,960;600,1024;720,1184;720,1196;720,1280;768,1024;800,1280;1080,1812;1080,1920;1440,2560;";
 
     private String supportStr = SUPPORT_DIMESION;
@@ -120,11 +130,12 @@ public class GenerateValueFiles_1920 {
         StringBuffer sbForWidth = new StringBuffer();
         sbForWidth.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
         sbForWidth.append("<resources>");
-        float cellw = w * 1.0f / baseW;
-
+        
+        float cellw = w * 1.0f / baseW;//计算宽度的核心
+        
         System.out.println("width : " + w + "," + baseW + "," + cellw);
         for (int i = 1; i < baseW; i++) {
-        	//width�滻��ֵ
+        	//width替换的值
             sbForWidth.append(WTemplate.replace("{0}", i + "").replace("{1}",
                     change(cellw * i) + ""));
         }
@@ -135,10 +146,12 @@ public class GenerateValueFiles_1920 {
         StringBuffer sbForHeight = new StringBuffer();
         sbForHeight.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
         sbForHeight.append("<resources>");
-        float cellh = h *1.0f/ baseH;
+        
+        float cellh = h *1.0f/ baseH;//计算高度的核心
+        
         System.out.println("height : "+ h + "," + baseH + "," + cellh);
         for (int i = 1; i < baseH; i++) {
-        	//height�滻��ֵ
+        	//height替换的值
             sbForHeight.append(HTemplate.replace("{0}", i + "").replace("{1}",
                     change(cellh * i) + ""));
         }
@@ -167,7 +180,7 @@ public class GenerateValueFiles_1920 {
 
     /**
      * 
-     * change:����ת�ɸ����� <br/>
+     * change:整数转成浮点数 <br/>
      *
      * @author SunXL
      * @param a

@@ -1,0 +1,130 @@
+import java.io.FileReader;
+import java.io.IOException;
+import java.sql.*;
+
+class MyBufferedReader {
+
+    private FileReader r;
+    MyBufferedReader(FileReader r) {
+        this.r=r;
+    }
+    //可以一次读一行的方法
+    public String myReadLine() throws IOException {
+        //定义一个临时容器，源BufferReader封装的是字符数组
+        //为了掩饰方便，定义一个StringBuilder容器。因为最终还是要将数据变成字符串
+        StringBuilder sb = new StringBuilder();
+        String stringFinal;
+
+        int ch = 0;
+        while((ch=r.read())!=-1) {
+            //是\r则继续往ch里添加下一个字符，而不添加\r
+            //是\n则返回toString,
+            //不然就是其他字段，则继续往缓冲区sb里添加
+            if(ch == '\r')
+                continue;
+            if(ch == '\n')
+                return sb.toString();
+
+
+
+            else
+                sb.append((char)ch);
+        }
+        //如果没有换行符，则数据被读取，放入了缓冲区，没刷到流中
+        if(sb.length()!=0){
+            return sb.toString();
+        }
+
+        return null;
+    }
+    public void myClose()throws IOException {
+        r.close();
+    }
+}
+
+
+
+
+public class TxtToDB {
+    public static void main(String[] args) throws IOException {
+        Connection conn = null;
+        ResultSet resultSet = null;
+        Statement statement = null;
+
+        FileReader fr = new FileReader("/Users/fred/Desktop/简书/city.txt");
+        MyBufferedReader myBuf = new MyBufferedReader(fr);
+        String line = null;
+        try {
+
+            while ((line = myBuf.myReadLine()) != null) {
+                String []ss = new String[12];
+                line = line.replace("   ","");
+                line = line.replace("\\t","\",\"");
+                line = line.replace(": {","");
+                line = line.replace("\"FIELD2\": \"\"","");
+                line = line.replace("},","}\n{");
+                if (line.length() == 0)
+                    continue;
+
+//            System.out.println(line);
+                ss = line.split(",");
+                for (int i = 0; i <ss.length; i++){
+                    if (ss.length <= 1){
+                        continue;
+                    }
+
+                    System.out.println(ss[i]+":"+i);
+                }
+
+                if (ss.length <= 1){
+                    continue;
+                }
+                Class.forName("org.sqlite.JDBC");
+                conn = DriverManager.getConnection("jdbc:sqlite:/Users/fred/Documents/Database/qianhu.sqlite");
+                statement = conn.createStatement();
+                String sql = "INSERT INTO HeFengWeatherCity(area_id, area_en, area_ch, nation_id, nation_name_en, nation_name_ch, province_name_en, province_name_ch, belong_area_name_en, belong_area_name_ch, latitude, longitude)" +
+                        "VALUES (" +
+                        ss[0]+ "," +
+                        ss[1]+ "," +
+                        ss[2]+ "," +
+                        ss[3]+ "," +
+                        ss[4]+ "," +
+                        ss[5]+ "," +
+                        ss[6]+ "," +
+                        ss[7]+ "," +
+                        ss[8]+ "," +
+                        ss[9]+ "," +
+                        ss[10]+ "," +
+                        ss[11]+");";
+                statement.executeUpdate(sql);
+//                while (resultSet.next()){
+//                    resultSet.getString("area_id");
+//                    System.out.println(resultSet.getString("area_id"));
+//                }
+
+            }
+        }catch (ClassNotFoundException ex){
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+
+        }
+        catch (SQLException sqlex){
+            System.out.println(sqlex.getMessage());
+            sqlex.printStackTrace();
+        }
+        finally {
+            try {
+
+                resultSet.close();
+                statement.close();
+                conn.close();
+            }
+            catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+        }
+        myBuf.myClose();
+    }
+
+
+}
